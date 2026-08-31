@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Объект 14 — личное дело</title>
+<title>Бункер 42 — личное дело</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{
@@ -162,7 +162,7 @@ h2,h3{scroll-margin-top:58px}
 <div class="wrap">
 
 <header class="masthead noprint">
-  <div class="stamp">ДСП<br>ОБЪЕКТ-14</div>
+  <div class="stamp">ДСП<br>БУНКЕР-42</div>
   <h1>Личное дело</h1>
   <p>Форма 14/ЛД · заполняется собственноручно</p>
 </header>
@@ -257,7 +257,7 @@ h2,h3{scroll-margin-top:58px}
     <!-- КАРТОЧКА 1 -->
     <article class="a5">
       <div class="hd">
-        <div class="t">Объект 14 · система жизнеобеспечения<b>Личное дело</b></div>
+        <div class="t">Бункер 42 · система жизнеобеспечения<b>Личное дело</b></div>
         <div class="n">ФОРМА 14/ЛД<br>ЛИСТ 1 ИЗ 2</div>
       </div>
 
@@ -298,7 +298,7 @@ h2,h3{scroll-margin-top:58px}
     <!-- КАРТОЧКА 2 -->
     <article class="a5">
       <div class="hd">
-        <div class="t">Объект 14 · система жизнеобеспечения<b>Учётный лист</b></div>
+        <div class="t">Бункер 42 · система жизнеобеспечения<b>Учётный лист</b></div>
         <div class="n">ФОРМА 14/ЛД<br>ЛИСТ 2 ИЗ 2</div>
       </div>
       <div class="pname" style="font-size:12pt;margin-top:2.5mm" id="p_name2">БЕЗ ИМЕНИ</div>
@@ -724,7 +724,7 @@ const saveDraft=()=>{clearTimeout(draftT);draftT=setTimeout(()=>lsSet(LS_DRAFT,c
   tg.ready();tg.expand();
 
   ["btn_print","btn_save","btn_load"].forEach(id=>$(id).style.display="none");
-  $("savehint").innerHTML="Заполните дело и нажмите кнопку <b>«Отправить ведущему»</b> внизу экрана. Готовый файл придёт вам в чат, копия — администрации Объекта.";
+  $("savehint").innerHTML="Заполните дело и нажмите кнопку <b>«Отправить ведущему»</b> внизу экрана. Готовый файл придёт вам в чат, копия — администрации Бункера-42.";
 
   /* confirm() в телеграм-вебвью блокируется — заменяем очистку на showConfirm */
   const oc=$("btn_clear"),nc=oc.cloneNode(true);
