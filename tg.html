@@ -134,6 +134,28 @@ code{font-family:var(--mono);background:#E7E2D8;padding:1px 5px;font-size:14.5px
   .a5{border:1px dashed #999;page-break-after:always;margin:0}
   .a5:last-child{page-break-after:auto}
 }
+
+/* ===== версия для игроков: без предпросмотра, форма в одну колонку ===== */
+html{scroll-behavior:smooth}
+.wrap{max-width:760px;padding-bottom:40px}
+.cols{grid-template-columns:1fr}
+.preview-col{display:none}
+.secnav{position:sticky;top:0;z-index:5;display:flex;gap:6px;background:var(--beton);
+  padding:8px 0;margin-bottom:12px;border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.secnav a{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);
+  border:1px solid var(--ink);background:var(--paper);padding:7px 10px;text-decoration:none;white-space:nowrap;flex:none}
+.secnav a:hover,.secnav a:active{background:var(--ink);color:var(--paper)}
+h2,h3{scroll-margin-top:58px}
+@media(max-width:560px){
+  body{font-size:16px}
+  .form{padding:14px}
+  .secnav{gap:4px}
+  .secnav a{font-size:10.5px;letter-spacing:.03em;padding:6px 7px}
+  .spin button{width:46px;font-size:22px}
+  .at .pm button{width:40px;height:36px;font-size:18px}
+  .rnd{width:46px}
+  button.act{display:block;width:100%;margin:6px 0}
+}
 </style>
 </head>
 <body>
@@ -142,13 +164,21 @@ code{font-family:var(--mono);background:#E7E2D8;padding:1px 5px;font-size:14.5px
 <header class="masthead noprint">
   <div class="stamp">ДСП<br>ОБЪЕКТ-14</div>
   <h1>Личное дело</h1>
-  <p>Форма 14/ЛД · заполняется собственноручно · две карточки A5</p>
+  <p>Форма 14/ЛД · заполняется собственноручно</p>
 </header>
+
+<nav class="secnav noprint">
+  <a href="#sec1">I · Данные</a>
+  <a href="#sec2">II · Внешность</a>
+  <a href="#sec3">III · История</a>
+  <a href="#sec4">IV · Хар-ки</a>
+  <a href="#sec5">Готово</a>
+</nav>
 
 <div class="cols">
 <!-- ================== ФОРМА ================== -->
 <div class="form noprint">
-  <h2>Раздел I · установочные данные</h2>
+  <h2 id="sec1">Раздел I · установочные данные</h2>
 
   <div class="f"><label>Ф-1 · Фамилия и имя</label><input type="text" id="f_name" maxlength="30" placeholder="Ковач Марта"></div>
 
@@ -172,7 +202,7 @@ code{font-family:var(--mono);background:#E7E2D8;padding:1px 5px;font-size:14.5px
   <div class="f"><label>Ф-7 · Профессия</label><select id="f_job"></select></div>
   <div class="zone" id="zonebox">Зона ответственности назначается по профессии.</div>
 
-  <h3>Раздел II · внешность и характер</h3>
+  <h3 id="sec2">Раздел II · внешность и характер</h3>
   <div class="r3">
     <div class="f"><label>Ф-8 · Глаза</label><select id="f_eye"></select></div>
     <div class="f"><label>Ф-9 · Волосы</label><select id="f_hair"></select></div>
@@ -187,20 +217,20 @@ code{font-family:var(--mono);background:#E7E2D8;padding:1px 5px;font-size:14.5px
     <div class="f"><label>Ф-14 · Вторая черта</label><select id="f_ch2"></select></div>
   </div>
 
-  <h3>Раздел III · предыстория</h3>
+  <h3 id="sec3">Раздел III · предыстория</h3>
   <div class="f">
     <label>Ф-15 · Кто вы и как оказались у шлюза</label>
     <textarea id="f_bio" maxlength="1000" placeholder="Что вы делали за час до сирены. Кого оставили снаружи. Почему вас впустили."></textarea>
     <div class="cnt" id="biocnt">0 / 1000</div>
   </div>
 
-  <h3>Раздел IV · характеристики</h3>
+  <h3 id="sec4">Раздел IV · характеристики</h3>
   <div class="attrs" id="attrs"></div>
   <div class="budget" id="budget"></div>
   <p class="hint">Удача не распределяется: она одинакова у всех и бросается ведущим.</p>
 
-  <h3>Готовое дело</h3>
-  <button class="act" id="btn_print">Распечатать обе карточки</button>
+  <h3 id="sec5">Готовое дело</h3>
+  <button class="act" id="btn_print" style="display:none">Распечатать обе карточки</button>
   <button class="act ghost" id="btn_save">Сохранить файл</button>
   <button class="act ghost" id="btn_load">Загрузить файл</button>
   <button class="act ghost" id="btn_clear">Очистить</button>
@@ -208,8 +238,8 @@ code{font-family:var(--mono);background:#E7E2D8;padding:1px 5px;font-size:14.5px
   <p class="hint" id="savehint">«Сохранить файл» кладёт анкету вместе с портретом в один <code>.json</code> — его и присылайте ведущему, он распечатает сам.</p>
 </div>
 
-<!-- ================== ПРЕДПРОСМОТР ================== -->
-<div>
+<!-- ================== ПРЕДПРОСМОТР (скрыт: игрокам не нужен, ведущий печатает из index.html/консоли; DOM оставлен — в него пишет sync()) ================== -->
+<div class="preview-col">
   <div class="scaler" id="scaler">
   <div class="stack">
 
