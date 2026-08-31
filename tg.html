@@ -751,17 +751,16 @@ const saveDraft=()=>{clearTimeout(draftT);draftT=setTimeout(()=>lsSet(LS_DRAFT,c
       return;
     }
     shelve(d); // отправленное дело остаётся в картотеке
-    tg.sendData(s); // после отправки Телеграм закрывает мини-апп сам
+    /* sendData доставляется боту только из анкеты, открытой с reply-клавиатуры;
+       при успехе Телеграм сразу закрывает мини-апп. Если окно живо спустя
+       секунду или sendData бросил ошибку — данные не ушли. */
+    let sent=false;
+    try{tg.sendData(s);sent=true}catch(e){}
+    const warn=()=>tg.showAlert("Похоже, дело не ушло: Телеграм принимает отправку только из анкеты, открытой кнопкой «📋 ЗАПОЛНИТЬ ЛИЧНОЕ ДЕЛО 📋» у строки ввода. Закройте это окно и откройте анкету оттуда — всё заполненное сохранено.");
+    if(!sent)warn();else setTimeout(warn,1200);
   }
-  /* sendData доставляется боту ТОЛЬКО при запуске с reply-клавиатуры; у таких
-     запусков initData пуст. Открыто из меню/по ссылке — отправка невозможна. */
-  if(!tg.initData){
-    tg.MainButton.setParams({text:"⬆ ОТПРАВИТЬ ВЕДУЩЕМУ ⬆",color:"#8E2F22",text_color:"#F2EFE8"});
-    tg.MainButton.onClick(submit);
-  }else{
-    tg.MainButton.setParams({text:"ОТКРОЙТЕ ЧЕРЕЗ КНОПКУ У СТРОКИ ВВОДА",color:"#5C5548",text_color:"#F2EFE8"});
-    tg.MainButton.onClick(()=>tg.showAlert("Из этого окна Телеграм не передаёт анкету боту. Закройте её и откройте кнопкой «📋 ЗАПОЛНИТЬ ЛИЧНОЕ ДЕЛО 📋» возле строки ввода — всё заполненное сохранится."));
-  }
+  tg.MainButton.setParams({text:"⬆ ОТПРАВИТЬ ВЕДУЩЕМУ ⬆",color:"#8E2F22",text_color:"#F2EFE8"});
+  tg.MainButton.onClick(submit);
   tg.MainButton.show();
 })();
 
