@@ -229,6 +229,17 @@ h2,h3{scroll-margin-top:58px}
   <div class="budget" id="budget"></div>
   <p class="hint">Удача не распределяется: она одинакова у всех и бросается ведущим.</p>
 
+  <h3>Картотека · мои дела</h3>
+  <div class="f">
+    <select id="slot_sel"></select>
+    <div style="margin-top:8px">
+      <button class="act ghost" id="btn_slot_save" type="button">💾 Подшить в картотеку</button>
+      <button class="act ghost" id="btn_slot_open" type="button">Открыть</button>
+      <button class="act ghost" id="btn_slot_del" type="button">Изъять</button>
+    </div>
+    <p class="hint">Дела хранятся на этом устройстве. «Подшить» — записать текущее дело (по имени персонажа); потом его можно открыть, поправить, подшить заново и отправить. Отправка тоже подшивает дело автоматически.</p>
+  </div>
+
   <h3 id="sec5">Готовое дело</h3>
   <button class="act" id="btn_print" style="display:none">Распечатать обе карточки</button>
   <button class="act ghost" id="btn_save">Сохранить файл</button>
@@ -645,6 +656,63 @@ $("btn_clear").addEventListener("click",()=>{
 });
 $("btn_print").addEventListener("click",()=>window.print());
 
+/* ============ КАРТОТЕКА ============
+   Несколько дел на игрока, хранятся в localStorage устройства. Плюс черновик:
+   случайное закрытие мини-аппа не теряет заполненное. */
+const LS_KEY="o14_dossiers",LS_DRAFT="o14_draft";
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))||null}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
+function collect(){const d={v:2,attrs:{...state}};FIELDS.forEach(k=>d[k]=$(k).value);return d}
+function applyData(d){FIELDS.forEach(k=>{if(k in d)$(k).value=d[k]});if(d.attrs)Object.assign(state,d.attrs);sync()}
+const isTG=()=>window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.platform!=="unknown";
+const uiAlert=m=>isTG()?Telegram.WebApp.showAlert(m):alert(m);
+const uiConfirm=(m,cb)=>isTG()?Telegram.WebApp.showConfirm(m,cb):cb(confirm(m));
+const slots=()=>lsGet(LS_KEY)||{};
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+function renderSlots(keep){
+  const names=Object.keys(slots()).sort();
+  $("slot_sel").innerHTML=names.length
+    ?names.map(n=>`<option>${esc(n)}</option>`).join("")
+    :`<option value="">— картотека пуста —</option>`;
+  if(keep&&names.includes(keep))$("slot_sel").value=keep;
+}
+function shelve(d){ // подшить дело по имени персонажа
+  const nm=(d.f_name||"").trim();
+  if(!nm)return null;
+  const s=slots();s[nm]={d,ts:Date.now()};
+  return lsSet(LS_KEY,s)?nm:null;
+}
+$("btn_slot_save").addEventListener("click",()=>{
+  const d=collect();
+  if(!(d.f_name||"").trim()){uiAlert("Дело регистрируется по имени: заполните Ф-1 «Фамилия и имя».");return}
+  const nm=shelve(d);
+  if(!nm){uiAlert("Хранилище на этом устройстве недоступно.");return}
+  renderSlots(nm);
+  uiAlert(`Дело «${nm}» подшито в картотеку.`);
+});
+$("btn_slot_open").addEventListener("click",()=>{
+  const nm=$("slot_sel").value,s=slots();
+  if(!nm||!s[nm]){uiAlert("В картотеке нет выбранного дела.");return}
+  applyData(s[nm].d);
+});
+$("btn_slot_del").addEventListener("click",()=>{
+  const nm=$("slot_sel").value;
+  if(!nm||!slots()[nm]){uiAlert("В картотеке нет выбранного дела.");return}
+  uiConfirm(`Изъять дело «${nm}» из картотеки?`,ok=>{
+    if(!ok)return;
+    const s=slots();delete s[nm];lsSet(LS_KEY,s);renderSlots();
+  });
+});
+renderSlots();
+/* черновик */
+let draftT=null;
+const saveDraft=()=>{clearTimeout(draftT);draftT=setTimeout(()=>lsSet(LS_DRAFT,collect()),300)};
+["input","change","click"].forEach(ev=>document.querySelector(".form").addEventListener(ev,saveDraft));
+(function(){
+  const d=lsGet(LS_DRAFT);
+  if(d&&FIELDS.some(k=>!["f_age","f_hei","f_wei"].includes(k)&&(d[k]||"").trim()))applyData(d);
+})();
+
 /* ============ ТЕЛЕГРАМ ============
    Этот файл — копия index.html для мини-аппа. В обычном браузере ведёт себя
    как оригинал; внутри Телеграма прячет файловые кнопки и шлёт данные боту
@@ -682,6 +750,7 @@ $("btn_print").addEventListener("click",()=>window.print());
       tg.showAlert("Объём дела превышает пропускную способность канала. Сократите предысторию (Ф-15) и повторите отправку.");
       return;
     }
+    shelve(d); // отправленное дело остаётся в картотеке
     tg.sendData(s); // после отправки Телеграм закрывает мини-апп сам
   }
   tg.MainButton.setParams({text:"⬆ ОТПРАВИТЬ ВЕДУЩЕМУ ⬆",color:"#8E2F22",text_color:"#F2EFE8"});
