@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Объект 14 — личное дело</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --beton:#D9D4CA; --paper:#F2EFE8; --ink:#1A222C; --blue:#2E4A6B;
+  --ochre:#A8641F; --line:#B4ADA0; --red:#8E2F22;
+  --mono:"Courier New",Courier,monospace;
+  --sans:Verdana,Tahoma,"Segoe UI",Arial,sans-serif;
+  --serif:Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--beton);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.65;letter-spacing:.01em}
+.wrap{max-width:1240px;margin:0 auto;padding:18px 16px 90px}
+.masthead{border:2px solid var(--ink);background:var(--paper);padding:14px 16px;margin-bottom:16px;position:relative}
+.masthead h1{font-family:var(--mono);font-size:28px;letter-spacing:.22em;margin:0;text-transform:uppercase}
+.masthead p{font-family:var(--mono);font-size:13px;letter-spacing:.14em;margin:6px 0 0;color:var(--blue);text-transform:uppercase}
+.stamp{position:absolute;right:12px;top:10px;transform:rotate(-7deg);border:2.5px solid var(--ochre);
+  color:var(--ochre);font-family:var(--mono);font-size:12.5px;letter-spacing:.16em;padding:5px 9px;text-align:center;line-height:1.3;opacity:.85}
+
+.cols{display:grid;grid-template-columns:minmax(320px,1fr) auto;gap:26px;align-items:start}
+@media(max-width:1080px){.cols{grid-template-columns:1fr}}
+.form{border:2px solid var(--ink);background:var(--paper);padding:20px}
+h2{font-family:var(--mono);font-size:14px;letter-spacing:.16em;text-transform:uppercase;margin:0 0 14px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin:22px 0 10px}
+.f{margin-bottom:11px}
+.f label{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:3px}
+.f input[type=text],.f textarea,.f select{width:100%;padding:7px 9px;border:1px solid var(--ink);background:#fff;
+  font-family:var(--serif);font-size:16px;color:var(--ink);border-radius:0}
+.f textarea{resize:vertical;min-height:110px}
+:focus-visible{outline:3px solid var(--ochre);outline-offset:1px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.r3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:560px){.r3{grid-template-columns:1fr}}
+
+/* счётчики */
+.spin{display:flex;border:1px solid var(--ink);background:#fff}
+.spin button{width:34px;border:none;background:#E7E2D8;font-family:var(--mono);font-size:19px;cursor:pointer;color:var(--ink)}
+.spin button:hover{background:var(--ink);color:var(--paper)}
+.spin input{flex:1;min-width:0;border:none;text-align:center;font-family:var(--mono);font-size:18px;padding:7px 2px;background:transparent}
+.spin .u{align-self:center;font-family:var(--mono);font-size:12.5px;color:var(--blue);padding-right:9px;letter-spacing:.1em}
+
+/* характеристики */
+.attrs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media(max-width:560px){.attrs{grid-template-columns:repeat(2,1fr)}}
+.at{border:1px solid var(--ink);background:#fff;text-align:center;padding:8px 4px}
+.at u{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;margin-bottom:5px}
+.at .v{font-family:var(--mono);font-size:24px;font-weight:700;line-height:1;margin-bottom:6px}
+.at .pm{display:flex;gap:4px;justify-content:center}
+.at .pm button{width:26px;height:24px;border:1px solid var(--ink);background:#E7E2D8;font-family:var(--mono);cursor:pointer;font-size:16px}
+.at .pm button:hover{background:var(--ink);color:var(--paper)}
+.budget{font-family:var(--mono);font-size:13.5px;letter-spacing:.06em;margin-top:10px;padding:8px 10px;border:1px dashed var(--line)}
+.budget.over{color:var(--red);border-color:var(--red);font-weight:700}
+.budget.done{color:var(--blue);border-color:var(--blue)}
+.zone{font-family:var(--mono);font-size:13.5px;margin-top:8px;padding:8px 10px;border-left:4px solid var(--blue);background:#fff}
+.zone.none{border-left-color:var(--red)}
+.cnt{font-family:var(--mono);font-size:12.5px;color:var(--blue);text-align:right;margin-top:2px}
+.cnt.over{color:var(--red);font-weight:700}
+.pick{display:flex;gap:6px}
+.pick select,.pick .spin{flex:1;min-width:0}
+.rnd{width:40px;flex:none;border:1px solid var(--ink);background:#E7E2D8;cursor:pointer;
+  font-family:var(--mono);font-size:17px;color:var(--ink);line-height:1}
+.rnd:hover{background:var(--ink);color:var(--paper)}
+button.act{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:10px 14px;
+  border:2px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer;margin:4px 6px 4px 0}
+button.act.ghost{background:transparent;color:var(--ink)}
+button.act:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.hint{font-size:14.5px;color:#5C5548;margin:10px 0 0}
+code{font-family:var(--mono);background:#E7E2D8;padding:1px 5px;font-size:14.5px}
+
+/* ================= КАРТОЧКИ A5 ================= */
+.stack{display:flex;flex-direction:column;gap:14px}
+.a5{width:148mm;height:210mm;background:#fff;border:1px solid var(--ink);padding:8mm 8mm 8mm 14mm;
+  position:relative;font-family:var(--serif);overflow:hidden}
+.a5::before{content:"";position:absolute;left:0;top:0;bottom:0;width:10mm;border-right:1px dashed var(--line);
+  background-image:radial-gradient(circle at 5mm 6mm,var(--beton) 1.6mm,transparent 1.7mm);
+  background-size:10mm 26mm;background-repeat:repeat-y}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--ink);padding-bottom:1.5mm}
+.hd .t{font-family:var(--mono);font-size:7pt;letter-spacing:.2em;text-transform:uppercase;line-height:1.6}
+.hd .t b{display:block;font-size:13pt;letter-spacing:.06em}
+.hd .n{font-family:var(--mono);font-size:6pt;letter-spacing:.14em;color:var(--blue);text-align:right;line-height:1.6}
+
+.pname{font-family:var(--mono);font-size:17pt;font-weight:700;letter-spacing:.02em;text-transform:uppercase;
+  line-height:1.05;word-break:break-word;margin-bottom:1.5mm}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--ink);border-bottom:none}
+.cell{border-bottom:1px solid var(--ink);border-right:1px solid var(--ink);padding:1.2mm 1.8mm;min-height:9.5mm}
+.cell:nth-child(3n){border-right:none}
+.cell u{display:block;font-family:var(--mono);font-size:5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);text-decoration:none}
+.cell span{font-size:9.5pt;line-height:1.2}
+.wide{grid-column:span 3}
+.wide2{grid-column:span 2}
+.zbar{border:1.5px solid var(--ink);background:var(--ink);color:#fff;padding:1.5mm 2mm;margin:2.5mm 0;
+  display:flex;justify-content:space-between;align-items:center}
+.zbar u{font-family:var(--mono);font-size:5.5pt;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;opacity:.75}
+.zbar b{font-family:var(--mono);font-size:10.5pt;letter-spacing:.05em;text-transform:uppercase}
+.aline{display:grid;grid-template-columns:repeat(6,1fr);gap:1.5mm;margin-bottom:2.5mm}
+.abox{border:1.5px solid var(--ink);text-align:center;padding:1.2mm 0}
+.abox.luck{border-style:double;border-width:3px}
+.abox u{display:block;font-family:var(--mono);font-size:5pt;letter-spacing:.04em;text-decoration:none;text-transform:uppercase}
+.abox b{font-family:var(--mono);font-size:15pt;line-height:1.1}
+.blk{margin-bottom:2mm}
+.blk u{display:block;font-family:var(--mono);font-size:5.5pt;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--blue);text-decoration:none;border-bottom:1px solid var(--line);margin-bottom:1mm}
+.blk p{margin:0;font-size:9pt;line-height:1.32;white-space:pre-wrap}
+.ft{position:absolute;left:14mm;right:8mm;bottom:5mm;display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:5pt;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);
+  border-top:1px solid var(--line);padding-top:1.2mm}
+
+/* карточка 2 */
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:2.5mm;margin-top:3mm}
+.slot{border:1.5px solid var(--ink);height:26mm;position:relative;padding:1.5mm}
+.slot u{font-family:var(--mono);font-size:5.5pt;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--blue)}
+.slot.pho{border-color:var(--blue)}
+.slot.dis{border-color:var(--red)}
+.slot.itm{border-style:dashed}
+.tracks{display:grid;grid-template-columns:repeat(3,1fr);gap:2mm;margin-top:3mm}
+.track{border:1.5px solid var(--ink);padding:1.5mm 2mm}
+.track u{display:block;font-family:var(--mono);font-size:5.5pt;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;margin-bottom:1.2mm}
+.pips{display:flex;flex-wrap:nowrap;gap:.8mm}
+.pip{width:2.9mm;height:2.9mm;border:1px solid var(--ink);border-radius:50%;flex:none}
+
+@media print{
+  @page{size:A4;margin:8mm}
+  body{background:#fff}
+  .noprint{display:none!important}
+  .wrap{max-width:none;padding:0}
+  .cols{display:block}
+  .stack{display:block}
+  .scaler{transform:none!important;height:auto!important}
+  .a5{border:1px dashed #999;page-break-after:always;margin:0}
+  .a5:last-child{page-break-after:auto}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead noprint">
+  <div class="stamp">ДСП<br>ОБЪЕКТ-14</div>
+  <h1>Личное дело</h1>
+  <p>Форма 14/ЛД · заполняется собственноручно · две карточки A5</p>
+</header>
+
+<div class="cols">
+<!-- ================== ФОРМА ================== -->
+<div class="form noprint">
+  <h2>Раздел I · установочные данные</h2>
+
+  <div class="f"><label>Ф-1 · Фамилия и имя</label><input type="text" id="f_name" maxlength="30" placeholder="Ковач Марта"></div>
+
+  <button class="act ghost" id="btn_rndall" type="button" style="margin-bottom:14px">⚄ Собрать случайного</button>
+  <p class="hint" style="margin:-6px 0 14px">Кнопка ⚄ рядом с полем перебрасывает только его. Имя и предыстория не трогаются.</p>
+
+  <div class="r3">
+    <div class="f"><label>Ф-2 · Возраст</label>
+      <div class="spin"><button type="button" data-sp="f_age" data-d="-1">−</button><input type="text" id="f_age" value="30" data-min="10" data-max="100" inputmode="numeric"><button type="button" data-sp="f_age" data-d="1">+</button><span class="u">лет</span></div></div>
+    <div class="f"><label>Ф-3 · Рост</label>
+      <div class="spin"><button type="button" data-sp="f_hei" data-d="-1">−</button><input type="text" id="f_hei" value="172" data-min="120" data-max="215" inputmode="numeric"><button type="button" data-sp="f_hei" data-d="1">+</button><span class="u">см</span></div></div>
+    <div class="f"><label>Ф-4 · Вес</label>
+      <div class="spin"><button type="button" data-sp="f_wei" data-d="-1">−</button><input type="text" id="f_wei" value="68" data-min="25" data-max="180" inputmode="numeric"><button type="button" data-sp="f_wei" data-d="1">+</button><span class="u">кг</span></div></div>
+  </div>
+
+  <div class="r2">
+    <div class="f"><label>Ф-5 · Пол</label><select id="f_sex"></select></div>
+    <div class="f"><label>Ф-6 · Гендер</label><select id="f_gen"></select></div>
+  </div>
+
+  <div class="f"><label>Ф-7 · Профессия</label><select id="f_job"></select></div>
+  <div class="zone" id="zonebox">Зона ответственности назначается по профессии.</div>
+
+  <h3>Раздел II · внешность и характер</h3>
+  <div class="r3">
+    <div class="f"><label>Ф-8 · Глаза</label><select id="f_eye"></select></div>
+    <div class="f"><label>Ф-9 · Волосы</label><select id="f_hair"></select></div>
+    <div class="f"><label>Ф-10 · Причёска</label><select id="f_cut"></select></div>
+  </div>
+  <div class="r2">
+    <div class="f"><label>Ф-11 · Особая примета</label><select id="f_m1"></select></div>
+    <div class="f"><label>Ф-12 · Вторая примета</label><select id="f_m2"></select></div>
+  </div>
+  <div class="r2">
+    <div class="f"><label>Ф-13 · Характер</label><select id="f_ch1"></select></div>
+    <div class="f"><label>Ф-14 · Вторая черта</label><select id="f_ch2"></select></div>
+  </div>
+
+  <h3>Раздел III · предыстория</h3>
+  <div class="f">
+    <label>Ф-15 · Кто вы и как оказались у шлюза</label>
+    <textarea id="f_bio" maxlength="1000" placeholder="Что вы делали за час до сирены. Кого оставили снаружи. Почему вас впустили."></textarea>
+    <div class="cnt" id="biocnt">0 / 1000</div>
+  </div>
+
+  <h3>Раздел IV · характеристики</h3>
+  <div class="attrs" id="attrs"></div>
+  <div class="budget" id="budget"></div>
+  <p class="hint">Удача не распределяется: она одинакова у всех и бросается ведущим.</p>
+
+  <h3>Готовое дело</h3>
+  <button class="act" id="btn_print">Распечатать обе карточки</button>
+  <button class="act ghost" id="btn_save">Сохранить файл</button>
+  <button class="act ghost" id="btn_load">Загрузить файл</button>
+  <button class="act ghost" id="btn_clear">Очистить</button>
+  <input type="file" id="file_in" accept=".json" hidden>
+  <p class="hint" id="savehint">«Сохранить файл» кладёт анкету вместе с портретом в один <code>.json</code> — его и присылайте ведущему, он распечатает сам.</p>
+</div>
+
+<!-- ================== ПРЕДПРОСМОТР ================== -->
+<div>
+  <div class="scaler" id="scaler">
+  <div class="stack">
+
+    <!-- КАРТОЧКА 1 -->
+    <article class="a5">
+      <div class="hd">
+        <div class="t">Объект 14 · система жизнеобеспечения<b>Личное дело</b></div>
+        <div class="n">ФОРМА 14/ЛД<br>ЛИСТ 1 ИЗ 2</div>
+      </div>
+
+      <div class="pname" id="p_name" style="margin-top:3mm">БЕЗ ИМЕНИ</div>
+      <div class="grid">
+        <div class="cell"><u>Возраст</u><span id="p_age">—</span></div>
+        <div class="cell"><u>Рост</u><span id="p_hei">—</span></div>
+        <div class="cell"><u>Вес</u><span id="p_wei">—</span></div>
+        <div class="cell"><u>Пол</u><span id="p_sex">—</span></div>
+        <div class="cell wide2"><u>Гендер</u><span id="p_gen">—</span></div>
+        <div class="cell wide"><u>Профессия</u><span id="p_job">—</span></div>
+      </div>
+
+      <div class="zbar"><u>Зона ответственности</u><b id="p_zone">НЕ НАЗНАЧЕНА</b></div>
+
+      <div class="aline">
+        <div class="abox"><u>Сила</u><b id="p_str">0</b></div>
+        <div class="abox"><u>Ловк.</u><b id="p_dex">0</b></div>
+        <div class="abox"><u>Вынос.</u><b id="p_end">0</b></div>
+        <div class="abox"><u>Интел.</u><b id="p_int">0</b></div>
+        <div class="abox"><u>Хар.</u><b id="p_cha">0</b></div>
+        <div class="abox luck"><u>Удача</u><b>общ.</b></div>
+      </div>
+
+      <div class="grid" style="border-bottom:1px solid var(--ink)">
+        <div class="cell"><u>Глаза</u><span id="p_eye">—</span></div>
+        <div class="cell"><u>Волосы</u><span id="p_hair">—</span></div>
+        <div class="cell"><u>Причёска</u><span id="p_cut">—</span></div>
+        <div class="cell wide"><u>Особые приметы</u><span id="p_marks">—</span></div>
+        <div class="cell wide"><u>Характер</u><span id="p_char">—</span></div>
+      </div>
+
+      <div class="blk" style="margin-top:2.5mm"><u>Предыстория</u><p id="p_bio">—</p></div>
+
+      <div class="ft"><span>Проверка: d20 + характеристика · сложность 10/15/20</span><span>Трек на нуле: сброс до 9 и карта состояния · второй ноль — смерть</span></div>
+    </article>
+
+    <!-- КАРТОЧКА 2 -->
+    <article class="a5">
+      <div class="hd">
+        <div class="t">Объект 14 · система жизнеобеспечения<b>Учётный лист</b></div>
+        <div class="n">ФОРМА 14/ЛД<br>ЛИСТ 2 ИЗ 2</div>
+      </div>
+      <div class="pname" style="font-size:12pt;margin-top:2.5mm" id="p_name2">БЕЗ ИМЕНИ</div>
+
+      <div class="tracks">
+        <div class="track"><u>Здоровье</u><div class="pips" id="tr_hp"></div></div>
+        <div class="track"><u>Рассудок</u><div class="pips" id="tr_san"></div></div>
+        <div class="track"><u>Сытость</u><div class="pips" id="tr_food"></div></div>
+      </div>
+
+      <div class="slots">
+        <div class="slot pho"><u>Факт · 1</u></div>
+        <div class="slot pho"><u>Факт · 2</u></div>
+        <div class="slot"><u>Достоинство · 1</u></div>
+        <div class="slot"><u>Достоинство · 2</u></div>
+        <div class="slot dis"><u>Недостаток · 1</u></div>
+        <div class="slot dis"><u>Недостаток · 2</u></div>
+        <div class="slot"><u>Спецнавык · 1</u></div>
+        <div class="slot"><u>Спецнавык · 2</u></div>
+        <div class="slot itm"><u>Предмет · 1</u></div>
+        <div class="slot itm"><u>Предмет · 2</u></div>
+      </div>
+
+      <div class="ft"><span>Навыки и расходники после применения сбрасываются</span><span>Все карты закрыты · вскрытие — ваше право</span></div>
+    </article>
+
+  </div>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+/* ============ СПРАВОЧНИКИ ============
+   Списки живут прямо здесь: анкету раздают игрокам одним файлом, и она обязана
+   работать без папки Events и без сервера. Консоль берёт те же списки из
+   Events/anketa-lists.js — после правки здесь пересобери его: node .build-lists.js */
+const SEX=[
+ "мужской",
+ "женский"
+];
+const GEN=[
+ "гетеро",
+ "гей",
+ "лесбиянка",
+ "би",
+ "пан",
+ "асексуал",
+ "не определился",
+ "не указано"
+];
+
+const JOBS={
+"Техника":[["теплотехник","Генераторная"],["электрик","Генераторная"],["сварщик","Коммуникации"],["слесарь","Коммуникации"],
+["программист","Генераторная"],["сисадмин","Коммуникации"],["радиотехник","Блок связи"],["шахтёр","Коммуникации"]],
+"Медицина":[["хирург","Медблок"],["медсестра","Медблок"],["фельдшер","Медблок"],["ветеринар","Медблок"],
+["фармацевт","Лаборатория"],["стоматолог","Медблок"],["психотерапевт","Медблок"],["патологоанатом","Лаборатория"]],
+"Сила":[["полицейский","Охрана и шлюз"],["контрактник","Охрана и шлюз"],["пожарный","Охрана и шлюз"],["охранник","Охрана и шлюз"],
+["спасатель МЧС","Охрана и шлюз"],["егерь","Теплицы"],["тренер по боксу","Охрана и шлюз"],["инструктор по стрельбе","Охрана и шлюз"]],
+"Жизнеобеспечение":[["агроном","Теплицы"],["флорист","Теплицы"],["повар","Общепит"],["сомелье","Общепит"],
+["официант","Общепит"],["дальнобойщик","Склады"],["сантехник","Канализация"],
+["химик-технолог","Лаборатория"],["микробиолог","Лаборатория"],["кладовщик","Склады"],["механизатор","Склады"]],
+"Люди и слова":[["учитель","Библиотека и архив"],["юрист","Жилой блок"],["пастор","Церковь"],["послушник","Церковь"],
+["журналист","Блок связи"],["блогер","Блок связи"],["студент","Библиотека и архив"],["соцработник","Жилой блок"],["переводчик","Библиотека и архив"],["кадровик","Жилой блок"],["актёр","Жилой блок"]],
+"Бесполезные в бункере":[["финансовый аналитик",""],["риелтор",""],["стилист",""],
+["диджей",""],["коуч",""]],
+"Без профессии":[["школьник",""],["пенсионер",""],["безработный",""],["домохозяйка",""]]
+};
+
+const EYE=[
+ "карие",
+ "тёмно-карие",
+ "ореховые",
+ "зелёные",
+ "серые",
+ "серо-голубые",
+ "голубые",
+ "синие",
+ "чёрные",
+ "разного цвета"
+];
+const HAIR=[
+ "чёрные",
+ "тёмно-русые",
+ "русые",
+ "светло-русые",
+ "рыжие",
+ "медные",
+ "каштановые",
+ "пепельные",
+ "седые",
+ "с проседью",
+ "крашеные",
+ "обесцвеченные"
+];
+const CUT=[
+ "бритая голова",
+ "короткая стрижка",
+ "ёжик",
+ "каре",
+ "до плеч",
+ "длинные распущенные",
+ "хвост",
+ "пучок",
+ "коса",
+ "дреды",
+ "кудри",
+ "залысины"
+];
+const MARK=[
+ "нет примет",
+ "ожог на кисти",
+ "шрам через бровь",
+ "шрам на подбородке",
+ "татуировка на шее",
+ "татуировка на предплечье",
+ "наколки на пальцах",
+ "нет пальца на руке",
+ "протез кисти",
+ "заметная хромота",
+ "очки с толстыми линзами",
+ "слуховой аппарат",
+ "родимое пятно на лице",
+ "сломанный нос",
+ "золотой зуб",
+ "пирсинг в брови",
+ "седая прядь",
+ "обгрызенные ногти"
+];
+const CHAR=[
+ "упрямый",
+ "вспыльчивый",
+ "замкнутый",
+ "деловитый",
+ "ироничный",
+ "тревожный",
+ "добродушный",
+ "мстительный",
+ "педантичный",
+ "безрассудный",
+ "скрытный",
+ "прямолинейный",
+ "заботливый",
+ "циничный",
+ "набожный",
+ "суетливый",
+ "хладнокровный",
+ "обидчивый",
+ "самоуверенный",
+ "услужливый",
+ "ворчливый",
+ "мечтательный",
+ "властный",
+ "покорный"
+];
+
+const ATTRS=[["str","Сила"],["dex","Ловкость"],["end","Выносливость"],["int","Интеллект"],["cha","Харизма"]];
+const BUDGET=6;
+const state={str:0,dex:0,end:0,int:0,cha:0};
+
+const $=id=>document.getElementById(id);
+function fill(sel,arr,first){
+  const s=$(sel);
+  s.innerHTML=(first?`<option value="">${first}</option>`:"")+arr.map(v=>`<option>${v}</option>`).join("");
+}
+fill("f_sex",SEX,"— не указан —");
+fill("f_gen",GEN,"— не указан —");
+fill("f_eye",EYE,"— выбрать —");
+fill("f_hair",HAIR,"— выбрать —");
+fill("f_cut",CUT,"— выбрать —");
+fill("f_m1",MARK,"— выбрать —");
+fill("f_m2",MARK,"— выбрать —");
+fill("f_ch1",CHAR,"— выбрать —");
+fill("f_ch2",CHAR,"— выбрать —");
+$("f_job").innerHTML=`<option value="">— выбрать —</option>`+
+  Object.entries(JOBS).map(([g,list])=>`<optgroup label="${g}">`+
+  list.map(([n])=>`<option>${n}</option>`).join("")+`</optgroup>`).join("");
+
+function zoneOf(job){
+  for(const list of Object.values(JOBS)){const f=list.find(x=>x[0]===job);if(f)return f[1]}
+  return "";
+}
+
+/* характеристики */
+$("attrs").innerHTML=ATTRS.map(([k,n])=>`<div class="at"><u>${n}</u><div class="v" id="v_${k}">0</div>
+  <div class="pm"><button type="button" data-a="${k}" data-d="-1">−</button><button type="button" data-a="${k}" data-d="1">+</button></div></div>`).join("");
+document.querySelectorAll("[data-a]").forEach(b=>b.addEventListener("click",()=>{
+  const k=b.dataset.a,d=+b.dataset.d,nv=state[k]+d;
+  if(nv<-1||nv>3)return;
+  if(d>0&&used()+1>BUDGET)return;
+  state[k]=nv;sync();
+}));
+const used=()=>ATTRS.reduce((s,[k])=>s+state[k],0);
+
+/* счётчики */
+document.querySelectorAll("[data-sp]").forEach(b=>b.addEventListener("click",()=>{
+  const i=$(b.dataset.sp);
+  let v=parseInt(i.value,10)||+i.dataset.min;
+  v=Math.max(+i.dataset.min,Math.min(+i.dataset.max,v+ +b.dataset.d));
+  i.value=v;sync();
+}));
+["f_age","f_hei","f_wei"].forEach(id=>$(id).addEventListener("input",sync));
+["f_age","f_hei","f_wei"].forEach(id=>$(id).addEventListener("blur",()=>{
+  const i=$(id);let v=parseInt(i.value,10);
+  if(isNaN(v))v=+i.dataset.min;
+  i.value=Math.max(+i.dataset.min,Math.min(+i.dataset.max,v));sync();
+}));
+
+/* пипсы */
+function pips(el,n){$(el).innerHTML=Array(n).fill('<span class="pip"></span>').join("")}
+pips("tr_hp",9);pips("tr_san",9);pips("tr_food",9);
+
+/* ============ СЛУЧАЙНЫЙ ВЫБОР ============ */
+const SELECTS=["f_sex","f_gen","f_job","f_eye","f_hair","f_cut","f_m1","f_m2","f_ch1","f_ch2"];
+const SPINS={f_age:[16,72],f_hei:[152,196],f_wei:[48,112]};
+const PAIRS={f_m2:"f_m1",f_m1:"f_m2",f_ch2:"f_ch1",f_ch1:"f_ch2"};
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+function rollSelect(id){
+  const s=$(id),opts=[...s.options].filter(o=>o.value);
+  if(!opts.length)return;
+  let v,guard=0;
+  do{v=opts[Math.floor(Math.random()*opts.length)].value;guard++}
+  while(guard<12&&PAIRS[id]&&v===$(PAIRS[id]).value&&v!=="нет примет");
+  s.value=v;
+}
+function rollSpin(id){const[a,b]=SPINS[id];$(id).value=ri(a,b)}
+
+/* кнопки ⚄ у каждого поля */
+function attachDice(){
+  SELECTS.forEach(id=>{
+    const s=$(id),wrap=document.createElement("div");
+    wrap.className="pick";
+    s.parentNode.insertBefore(wrap,s);wrap.appendChild(s);
+    const b=document.createElement("button");
+    b.type="button";b.className="rnd";b.textContent="⚄";
+    b.title="Случайное значение";
+    b.addEventListener("click",()=>{rollSelect(id);sync()});
+    wrap.appendChild(b);
+  });
+  Object.keys(SPINS).forEach(id=>{
+    const sp=$(id).closest(".spin"),wrap=document.createElement("div");
+    wrap.className="pick";
+    sp.parentNode.insertBefore(wrap,sp);wrap.appendChild(sp);
+    const b=document.createElement("button");
+    b.type="button";b.className="rnd";b.textContent="⚄";
+    b.title="Случайное значение";
+    b.addEventListener("click",()=>{rollSpin(id);sync()});
+    wrap.appendChild(b);
+  });
+}
+attachDice();
+
+$("btn_rndall").addEventListener("click",()=>{
+  SELECTS.forEach(rollSelect);
+  Object.keys(SPINS).forEach(rollSpin);
+  ATTRS.forEach(([k])=>state[k]=0);
+  let left=BUDGET,guard=0;
+  while(left>0&&guard<200){
+    const[k]=ATTRS[Math.floor(Math.random()*ATTRS.length)];
+    if(state[k]<3){state[k]++;left--}
+    guard++;
+  }
+  sync();
+});
+
+/* синхронизация */
+const T=(v,dash="—")=>v&&v.trim()?v.trim():dash;
+function sync(){
+  $("p_name").textContent=T($("f_name").value,"БЕЗ ИМЕНИ").toUpperCase();
+  $("p_name2").textContent=$("p_name").textContent;
+  $("p_age").textContent=$("f_age").value+" лет";
+  $("p_hei").textContent=$("f_hei").value+" см";
+  $("p_wei").textContent=$("f_wei").value+" кг";
+  $("p_sex").textContent=T($("f_sex").value);
+  $("p_gen").textContent=T($("f_gen").value);
+  const job=$("f_job").value;
+  $("p_job").textContent=T(job);
+  const z=zoneOf(job);
+  $("p_zone").textContent=z||"НЕ НАЗНАЧЕНА";
+  const zb=$("zonebox");
+  if(!job){zb.className="zone";zb.textContent="Зона ответственности назначается по профессии."}
+  else if(z){zb.className="zone";zb.textContent=`Зона: ${z}. Внутри неё +2 ко всем проверкам, свободный проход, личная ответственность за поломки.`}
+  else{zb.className="zone none";zb.textContent="Зона не назначена: система не считает профессию профильной. Получить зону можно только решением Совета."}
+
+  $("p_eye").textContent=T($("f_eye").value);
+  $("p_hair").textContent=T($("f_hair").value);
+  $("p_cut").textContent=T($("f_cut").value);
+  const m=[$("f_m1").value,$("f_m2").value].filter(x=>x&&x!=="нет примет");
+  $("p_marks").textContent=m.length?[...new Set(m)].join(", "):"нет примет";
+  const c=[$("f_ch1").value,$("f_ch2").value].filter(Boolean);
+  $("p_char").textContent=c.length?[...new Set(c)].join(", "):"—";
+
+  const bio=$("f_bio").value;
+  $("p_bio").textContent=T(bio);
+  const cc=$("biocnt");
+  cc.textContent=`${bio.length} / 1000`;
+  cc.classList.toggle("over",bio.length>=1000);
+
+  ATTRS.forEach(([k])=>{
+    const v=state[k];
+    $("v_"+k).textContent=(v>0?"+":"")+v;
+    $("p_"+k).textContent=(v>0?"+":"")+v;
+  });
+  const u=used(),b=$("budget");
+  b.className="budget"+(u>BUDGET?" over":u===BUDGET?" done":"");
+  b.textContent=u===BUDGET?`Использовано ${u} из ${BUDGET}. Распределение завершено.`
+    :`Использовано ${u} из ${BUDGET}. Осталось ${BUDGET-u}. Диапазон: от −1 до +3.`;
+
+}
+["f_name","f_bio"].forEach(id=>$(id).addEventListener("input",sync));
+["f_sex","f_gen","f_job","f_eye","f_hair","f_cut","f_m1","f_m2","f_ch1","f_ch2"].forEach(id=>$(id).addEventListener("change",sync));
+
+/* масштаб предпросмотра */
+function fit(){
+  const host=$("scaler").parentElement;
+  const px=148*(96/25.4);
+  const s=Math.min(1,host.clientWidth/px);
+  $("scaler").style.transform=`scale(${s})`;
+  $("scaler").style.transformOrigin="top left";
+  $("scaler").style.height=(2*210*(96/25.4)*s+14*s)+"px";
+}
+addEventListener("resize",fit);
+
+/* файлы */
+const FIELDS=["f_name","f_age","f_hei","f_wei","f_sex","f_gen","f_job","f_eye","f_hair","f_cut","f_m1","f_m2","f_ch1","f_ch2","f_bio"];
+$("btn_save").addEventListener("click",()=>{
+  const d={v:2,attrs:{...state}};
+  FIELDS.forEach(k=>d[k]=$(k).value);
+  const nm=(T($("f_name").value,"персонаж")).replace(/[^\wА-Яа-яЁё -]/g,"");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:"application/json"}));
+  a.download=`ЛД_${nm}.json`;a.click();URL.revokeObjectURL(a.href);
+});
+$("btn_load").addEventListener("click",()=>$("file_in").click());
+$("file_in").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      FIELDS.forEach(k=>{if(k in d)$(k).value=d[k]});
+      if(d.attrs)Object.assign(state,d.attrs);
+      sync();
+    }catch(err){alert("Файл не читается. Нужен .json, сохранённый этой же формой.")}
+  };
+  r.readAsText(f);e.target.value="";
+});
+$("btn_clear").addEventListener("click",()=>{
+  if(!confirm("Очистить всё личное дело?"))return;
+  FIELDS.forEach(k=>$(k).value="");
+  $("f_age").value=30;$("f_hei").value=172;$("f_wei").value=68;
+  ATTRS.forEach(([k])=>state[k]=0);
+  sync();
+});
+$("btn_print").addEventListener("click",()=>window.print());
+
+/* ============ ТЕЛЕГРАМ ============
+   Этот файл — копия index.html для мини-аппа. В обычном браузере ведёт себя
+   как оригинал; внутри Телеграма прячет файловые кнопки и шлёт данные боту
+   через MainButton. ВАЖНО: sendData работает только при открытии с
+   reply-клавиатуры бота (KeyboardButton c web_app). */
+(function(){
+  const tg=window.Telegram&&window.Telegram.WebApp;
+  if(!tg||!tg.platform||tg.platform==="unknown")return; // открыто не в Телеграме
+  tg.ready();tg.expand();
+
+  ["btn_print","btn_save","btn_load"].forEach(id=>$(id).style.display="none");
+  $("savehint").innerHTML="Заполните дело и нажмите кнопку <b>«Отправить ведущему»</b> внизу экрана. Готовый файл придёт вам в чат, копия — администрации Объекта.";
+
+  /* confirm() в телеграм-вебвью блокируется — заменяем очистку на showConfirm */
+  const oc=$("btn_clear"),nc=oc.cloneNode(true);
+  oc.parentNode.replaceChild(nc,oc);
+  nc.addEventListener("click",()=>tg.showConfirm("Очистить всё личное дело?",ok=>{
+    if(!ok)return;
+    FIELDS.forEach(k=>$(k).value="");
+    $("f_age").value=30;$("f_hei").value=172;$("f_wei").value=68;
+    ATTRS.forEach(([k])=>state[k]=0);
+    sync();
+  }));
+
+  const enc=new TextEncoder();
+  function submit(){
+    const d={v:2,attrs:{...state}};
+    FIELDS.forEach(k=>d[k]=$(k).value);
+    if(!d.f_name.trim()){
+      tg.showAlert("Форма 14/ЛД не принята: не заполнено поле Ф-1 «Фамилия и имя».");
+      return;
+    }
+    const s=JSON.stringify(d);
+    if(enc.encode(s).length>4000){ // лимит sendData — 4096 байт
+      tg.showAlert("Объём дела превышает пропускную способность канала. Сократите предысторию (Ф-15) и повторите отправку.");
+      return;
+    }
+    tg.sendData(s); // после отправки Телеграм закрывает мини-апп сам
+  }
+  tg.MainButton.setText("ОТПРАВИТЬ ВЕДУЩЕМУ");
+  tg.MainButton.show();
+  tg.MainButton.onClick(submit);
+})();
+
+sync();fit();setTimeout(fit,80);
+</script>
+</body>
+</html>
